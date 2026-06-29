@@ -1,32 +1,32 @@
 # Control Variates for a Bayesian GARCH Model
 
-This project studies variance reduction for Markov Chain Monte Carlo (MCMC) estimators in a Bayesian GARCH(1,1) model. It implements Zero-Variance (ZV) control variates following Mira, Solgi & Imparato (2013), and compares ordinary MCMC estimates with ZV estimators based on OLS, Lasso, and Post-Lasso regression.
+This project studies variance reduction for Markov Chain Monte Carlo (MCMC) estimators in a Bayesian GARCH(1,1) model. It implements Zero-Variance (ZV) control variates following Mira, Solgi and Imparato (2013), and compares ordinary MCMC estimates with ZV estimators based on OLS, Lasso, and Post-Lasso regression.
 
 The project was developed for the **Simulation & Monte Carlo Methods** course at **ENSAE Paris**.
 
 ## Authors
 
-- Baptiste Leloup  
-- Mohamed Aziz Maghrebi  
-- Alexandre Berlia  
+* Baptiste Leloup
+* Mohamed Aziz Maghrebi
+* Alexandre Berlia
 
 ## Project Objective
 
 The goal is to estimate posterior expectations of GARCH parameters more accurately without increasing the number of MCMC iterations.
 
-For a target function \(f(\omega)\), the standard MCMC estimator is:
+For a target function $f(\omega)$, the standard MCMC estimator is:
 
-\[
-\hat{\mu}_{MC} = \frac{1}{N}\sum_{i=1}^{N} f(\omega^{(i)}).
-\]
+$$
+\hat{\mu}*{MC} = \frac{1}{N}\sum*{i=1}^{N} f(\omega^{(i)}).
+$$
 
-This estimator is unbiased asymptotically but can have high Monte Carlo variance. The Zero-Variance approach replaces \(f\) by a corrected function \(\tilde{f}\) such that:
+This estimator is asymptotically unbiased but can have high Monte Carlo variance. The Zero-Variance approach replaces $f$ by a corrected function $\tilde{f}$ such that:
 
-\[
-\mathbb{E}_{\pi}[\tilde{f}] = \mathbb{E}_{\pi}[f],
+$$
+\mathbb{E}*{\pi}[\tilde{f}] = \mathbb{E}*{\pi}[f],
 \qquad
-\mathrm{Var}_{\pi}(\tilde{f}) \ll \mathrm{Var}_{\pi}(f).
-\]
+\mathrm{Var}*{\pi}(\tilde{f}) \ll \mathrm{Var}*{\pi}(f).
+$$
 
 The correction is computed as a post-processing step on the same MCMC chain, so no additional posterior sampling is required.
 
@@ -34,29 +34,32 @@ The correction is computed as a post-processing step on the same MCMC chain, so 
 
 The project uses a Gaussian GARCH(1,1) model for log-returns:
 
-\[
+$$
 r_t \mid \mathcal{F}_{t-1} \sim \mathcal{N}(0,h_t),
-\]
+$$
 
 with conditional variance:
 
-\[
+$$
 h_t = \omega_1 + \omega_2 r_{t-1}^2 + \omega_3 h_{t-1}.
-\]
+$$
 
 The parameter vector is:
 
-\[
+$$
 \omega = (\omega_1,\omega_2,\omega_3).
-\]
+$$
 
 The admissible parameter space is:
 
-\[
-\omega_1 > 0,\quad \omega_2 \geq 0,\quad \omega_3 \geq 0,\quad \omega_2+\omega_3 < 1.
-\]
+$$
+\omega_1 > 0,\qquad
+\omega_2 \geq 0,\qquad
+\omega_3 \geq 0,\qquad
+\omega_2+\omega_3 < 1.
+$$
 
-The quantity \(\omega_2+\omega_3\) is interpreted as the **persistence of volatility**.
+The quantity $\omega_2+\omega_3$ is interpreted as the **persistence of volatility**.
 
 ## Methodology
 
@@ -79,21 +82,21 @@ Main steps:
 
 The first-order ZV correction uses a degree-1 polynomial:
 
-\[
+$$
 P(\omega)=a^\top \omega.
-\]
+$$
 
 The corrected function is:
 
-\[
+$$
 \tilde{f}(\omega)=f(\omega)+a^\top z(\omega),
-\]
+$$
 
 where:
 
-\[
+$$
 z(\omega)=-\frac{1}{2}\nabla \log \pi(\omega \mid r).
-\]
+$$
 
 The optimal coefficient is estimated by OLS regression of the target function on the posterior-score controls.
 
@@ -101,17 +104,17 @@ The optimal coefficient is estimated by OLS regression of the target function on
 
 The control space is enlarged using a degree-2 polynomial:
 
-\[
+$$
 P(\omega)=a^\top \omega+\frac{1}{2}\omega^\top B\omega.
-\]
+$$
 
 For a three-dimensional GARCH parameter vector, this produces 9 control variates.
 
 The project compares:
 
-- **ZV-OLS**: full ordinary least squares on all controls.
-- **ZV-Lasso**: Lasso regression with cross-validation.
-- **ZV-Post-Lasso**: Lasso for variable selection, then OLS refit on the selected variables.
+* **ZV-OLS**: full ordinary least squares on all controls.
+* **ZV-Lasso**: Lasso regression with cross-validation.
+* **ZV-Post-Lasso**: Lasso for variable selection, then OLS refit on the selected variables.
 
 ### 4. Regression on Autocorrelated MCMC Chains
 
@@ -119,9 +122,9 @@ Since MCMC draws are autocorrelated, the project investigates whether the regres
 
 Three strategies are compared:
 
-- raw post-burn-in chain,
-- thinning,
-- block averaging.
+* raw post-burn-in chain,
+* thinning,
+* block averaging.
 
 The empirical result is that using the full raw chain is generally more stable than thinning or block averaging, because the latter reduce the sample size available for regression.
 
@@ -144,23 +147,23 @@ Persistence: 0.93
 
 Using degree-1 controls, the variance reduction factors are approximately:
 
-| Target | Variance Reduction Factor |
-|---|---:|
-| \(\omega_1\) | 13.5 |
-| \(\omega_2\) | 49.9 |
-| \(\omega_3\) | 24.8 |
-| \(\omega_2+\omega_3\) | 18.6 |
+| Target              | Variance Reduction Factor |
+| ------------------- | ------------------------: |
+| $\omega_1$          |                      13.5 |
+| $\omega_2$          |                      49.9 |
+| $\omega_3$          |                      24.8 |
+| $\omega_2+\omega_3$ |                      18.6 |
 
 ### Second-Order ZV Variance Reduction
 
 Using degree-2 controls, ZV-OLS and ZV-Post-Lasso produce much stronger variance reduction:
 
-| Target | ZV-OLS | ZV-Lasso | ZV-Post-Lasso |
-|---|---:|---:|---:|
-| \(\omega_1\) | 1,612 | 39.9 | 1,612 |
-| \(\omega_2\) | 10,394 | 103.8 | 10,394 |
-| \(\omega_3\) | 6,274 | 49.0 | 6,274 |
-| \(\omega_2+\omega_3\) | 1,389 | 50.2 | 1,389 |
+| Target              | ZV-OLS | ZV-Lasso | ZV-Post-Lasso |
+| ------------------- | -----: | -------: | ------------: |
+| $\omega_1$          |  1,612 |     39.9 |         1,612 |
+| $\omega_2$          | 10,394 |    103.8 |        10,394 |
+| $\omega_3$          |  6,274 |     49.0 |         6,274 |
+| $\omega_2+\omega_3$ |  1,389 |     50.2 |         1,389 |
 
 In this low-dimensional setting, OLS performs best because the degree-2 dictionary contains only 9 regressors. Lasso is less effective because shrinkage under-corrects the estimator.
 
@@ -232,33 +235,33 @@ The notebook includes:
 
 ## Important Notes
 
-- The EUR/USD experiment uses `yfinance`, so it requires an internet connection.
-- The simulated-data experiments can be run without external data.
-- The Zero-Variance estimator is a post-processing method: it improves estimator precision but does not fix a poorly mixing MCMC chain.
-- Good MCMC calibration remains necessary before applying ZV controls.
-- Boundary effects may matter because the GARCH posterior is constrained by positivity and stationarity conditions.
+* The EUR/USD experiment uses `yfinance`, so it requires an internet connection.
+* The simulated-data experiments can be run without external data.
+* The Zero-Variance estimator is a post-processing method: it improves estimator precision but does not fix a poorly mixing MCMC chain.
+* Good MCMC calibration remains necessary before applying ZV controls.
+* Boundary effects may matter because the GARCH posterior is constrained by positivity and stationarity conditions.
 
 ## Key Functions
 
 The notebook contains the following main functions:
 
-| Function | Purpose |
-|---|---|
-| `simulate_garch` | Simulate a GARCH(1,1) return series |
-| `compute_h` | Compute the conditional variance path |
-| `log_posterior` | Evaluate the Bayesian log-posterior |
-| `grad_log_posterior` | Compute the posterior score |
-| `rwm` | Run Random-Walk Metropolis |
-| `adaptive_rwm` | Tune and run the MCMC sampler |
-| `build_controls` | Build degree-1 or degree-2 ZV control matrices |
-| `zv_estimator_ols` | Compute ZV-OLS estimator |
-| `zv_estimator_lasso` | Compute ZV-Lasso estimator |
-| `zv_estimator_post_lasso` | Compute ZV-Post-Lasso estimator |
-| `effective_sample_size` | Estimate MCMC effective sample size |
+| Function                  | Purpose                                        |
+| ------------------------- | ---------------------------------------------- |
+| `simulate_garch`          | Simulate a GARCH(1,1) return series            |
+| `compute_h`               | Compute the conditional variance path          |
+| `log_posterior`           | Evaluate the Bayesian log-posterior            |
+| `grad_log_posterior`      | Compute the posterior score                    |
+| `rwm`                     | Run Random-Walk Metropolis                     |
+| `adaptive_rwm`            | Tune and run the MCMC sampler                  |
+| `build_controls`          | Build degree-1 or degree-2 ZV control matrices |
+| `zv_estimator_ols`        | Compute ZV-OLS estimator                       |
+| `zv_estimator_lasso`      | Compute ZV-Lasso estimator                     |
+| `zv_estimator_post_lasso` | Compute ZV-Post-Lasso estimator                |
+| `effective_sample_size`   | Estimate MCMC effective sample size            |
 
 ## References
 
-- Mira, A., Solgi, R., & Imparato, D. (2013). *Zero variance Markov chain Monte Carlo for Bayesian estimators*. Statistics and Computing, 23(5), 653–662.
-- South, L. F., Oates, C. J., Mira, A., & Drovandi, C. (2022). *Regularized zero-variance control variates*. Bayesian Analysis.
-- Bollerslev, T. (1986). *Generalized autoregressive conditional heteroskedasticity*. Journal of Econometrics, 31(3), 307–327.
-- Roberts, G. O., Gelman, A., & Gilks, W. R. (1997). *Weak convergence and optimal scaling of random walk Metropolis algorithms*. Annals of Applied Probability.
+* Mira, A., Solgi, R., and Imparato, D. (2013). *Zero variance Markov chain Monte Carlo for Bayesian estimators*. Statistics and Computing, 23(5), 653–662.
+* South, L. F., Oates, C. J., Mira, A., and Drovandi, C. (2022). *Regularized zero-variance control variates*. Bayesian Analysis.
+* Bollerslev, T. (1986). *Generalized autoregressive conditional heteroskedasticity*. Journal of Econometrics, 31(3), 307–327.
+* Roberts, G. O., Gelman, A., and Gilks, W. R. (1997). *Weak convergence and optimal scaling of random walk Metropolis algorithms*. Annals of Applied Probability.
